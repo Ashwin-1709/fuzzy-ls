@@ -1,6 +1,6 @@
 [package]
 name = "fuzzy-ls"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Ashwin Pugalia"]
 description = "Fuzzy file search command line utility."
