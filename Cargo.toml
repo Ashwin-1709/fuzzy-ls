@@ -7,6 +7,9 @@ description = "Fuzzy file search command line utility."
 license = "MIT"
 categories = ["command-line-interface", "command-line-utilities", "algorithms"]
 keywords = ["command-line-utilities", "fuzzy-search", "file-search", "regex"]
+repository="https://github.com/Ashwin-1709/fuzzy-ls"
+homepage="https://github.com/Ashwin-1709/fuzzy-ls"
+readme="README.md"
 [dependencies]
 clap = { version = "4.5.29", features = ["derive"] }
 regex = "1.11.1"
