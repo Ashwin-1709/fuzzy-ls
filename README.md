@@ -87,5 +87,8 @@ utils - .\test_data\utils.cpp
 utils - .\test_data\utils.h
 ```
 
+## Community Contribution
+Feel free to contribute to the project whether its reporting issues/suggestions or feature requests or new feature PRs!
+
 ## License
 This project is licensed under the MIT License.
