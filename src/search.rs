@@ -11,6 +11,7 @@ pub enum FuzzySearchAlgorithm {
 
 /// Walks over the directory and returns a vector of tuples containing the file name and the full path.
 /// Skip the files with the extensions provided in the exclude_extensions flag.
+/// Focuses the search to extensions provided in the focus_extensions flag.
 ///
 /// # Arguments
 ///

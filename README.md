@@ -40,14 +40,14 @@ Here are some examples demonstrating how to use `fuzzy-ls`. Exact matches are hi
 
 ### Fuzzy search
 ```shell
-<cargo run>/<binary> search
+fuzzy-ls search
 search - .\src\search.rs
 searchfn - .\test_data\searchfn.java
 ```
 
 ### Regex search
 ```shell
-<cargo run>/<binary> fuzzy.* -r
+fuzzy-ls fuzzy.* -r
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.d
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.exe
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.pdb
@@ -61,7 +61,7 @@ You can mix and match focused flags with any of the search type
 
 #### Regex with focused extensions
 ```shell
-<cargo run>/<binary> fuzzy.* -r -f exe
+fuzzy-ls fuzzy.* -r -f exe
 fuzzy_ls-2f8732b3ab03d5a6 - .\target\debug\deps\fuzzy_ls-2f8732b3ab03d5a6.exe
 fuzzy_ls-c33a3a1ef73b944b - .\target\debug\deps\fuzzy_ls-c33a3a1ef73b944b.exe
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.exe
@@ -70,7 +70,7 @@ fuzzy-ls - .\target\debug\fuzzy-ls.exe
 
 #### Regex with exclude extensions
 ```shell
-<cargo run>/<binary> fuzzy.* -r -e exe
+fuzzy-ls fuzzy.* -r -e exe
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.d
 fuzzy_ls - .\target\debug\deps\fuzzy_ls.pdb
 fuzzy-ls - .\target\debug\fuzzy-ls.d
@@ -82,10 +82,37 @@ Note: In case both focused and exclude extensions are provided: focus extensions
 
 ### Exact string matching
 ```shell
-<cargo run>/<binary> utils -p
+fuzzy-ls utils -p
 utils - .\test_data\utils.cpp
 utils - .\test_data\utils.h
 ```
+
+## Experimental Feature: Open files in editor
+The `open_in_editor` feature allows you to open files directly in your preferred editor from the command line. By default, this feature uses `nvim` (Neovim) and opens the file in a new terminal window. You can override the default editor using the `-d` flag.
+
+### Installation and Usage
+
+To install and run the feature locally, use the following command:
+```shell
+cargo install fuzzy-ls --features "open_in_editor"
+```
+
+### Here is the feature in action in windows
+
+![nvim](static/code_editor_nvim.png)
+
+
+To override the default editor, use the `-d` or `--default_editor_command` flag followed by the editor of your choice. For example, to use VS Code:
+```shell
+fuzzy-ls search -d code 
+```
+
+![vscode](static/code_editor_vscode.png)
+
+### Platform Support
+
+The `open_in_editor` feature has been tested on Windows. Testing on other operating systems is planned before merging with the default behavior. Users are encouraged to try it out on various OSes and report any issues.
+
 
 ## Community Contribution
 Feel free to contribute to the project whether its reporting issues/suggestions or feature requests or new feature PRs!

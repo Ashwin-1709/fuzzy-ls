@@ -1,4 +1,5 @@
 extern crate clap;
+mod editor;
 mod search;
 use clap::{ArgAction, Parser};
 use regex::Regex;
@@ -45,6 +46,16 @@ struct Cli {
         num_args = 0..,
     )]
     focus: Vec<String>,
+
+    /// Default code editor to open the files.
+    #[clap(
+        short = 'd',
+        long,
+        help = "Default editor to open files. By default the files are opened in neovim.",
+        value_name = "nvim",
+        default_value = "nvim"
+    )]
+    default_editor_command: String,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -117,12 +128,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("No files found.");
     } else {
         println!("{} files found:", potential_hits.len());
-        for (score, file_name, full_path) in potential_hits {
+        let mut file_number: usize = 1;
+        for (score, file_name, full_path) in potential_hits.clone() {
             if score == 0 {
-                println!("\x1b[32m{}\x1b[0m - {}", file_name, full_path); // Green color for score 0
+                println!(
+                    "{}. \x1b[32m{}\x1b[0m - {}",
+                    file_number, file_name, full_path
+                ); // Green color for score 0
             } else {
-                println!("\x1b[34m{}\x1b[0m - {}", file_name, full_path); // Blue color for other scores
+                println!(
+                    "{}. \x1b[34m{}\x1b[0m - {}",
+                    file_number, file_name, full_path
+                ); // Blue color for other scores
             }
+            file_number += 1;
+        }
+
+        if cfg!(feature = "open_in_editor") {
+           return editor::experimental_open_files(
+                args.default_editor_command,
+                file_number,
+                potential_hits,
+            );
         }
     }
     return Ok(());
