@@ -10,6 +10,7 @@
 - **Exact Matches**: Search for files that exactly match your query.
 - **Focus on Extensions**: Limit your search to specific file extensions.
 - **Exclude Extensions**: Exclude files with certain extensions from your search.
+- **GUI**: Get clear view of the search results in a terminal GUI.
 
 ## Fuzzy Searching Algorithm
 
@@ -36,7 +37,7 @@ Options:
 ## Examples
 Here are some examples demonstrating how to use `fuzzy-ls`. Exact matches are highlighted by green on terminal and fuzzy matches with blue like this:
 
-![fuzzy_search](static/fuzzy_search.png)
+![fuzzy_search](static/fuzzy_search_ui.png)
 
 ### Fuzzy search
 ```shell

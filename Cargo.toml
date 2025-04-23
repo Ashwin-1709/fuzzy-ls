@@ -3,7 +3,7 @@ open_in_editor = []
 
 [package]
 name = "fuzzy-ls"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 authors = ["Ashwin Pugalia"]
 description = "Fuzzy file search command line utility."
@@ -15,5 +15,7 @@ homepage="https://github.com/Ashwin-1709/fuzzy-ls"
 readme="README.md"
 [dependencies]
 clap = { version = "4.5.29", features = ["derive"] }
+crossterm = "0.29.0"
 regex = "1.11.1"
+tui = "0.19.0"
 walkdir = "2.5.0"
