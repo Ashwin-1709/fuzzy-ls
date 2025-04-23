@@ -1,7 +1,12 @@
 # fuzzy-ls
 ![crates.io](https://img.shields.io/crates/v/fuzzy-ls.svg) ![Build Passing](https://github.com/Ashwin-1709/fuzzy-ls/actions/workflows/rust.yml/badge.svg)
 
-`fuzzy-ls` is a cross-platform command line utility that extends the functionality of the popular `ls` command by enabling fuzzy searching, regex pattern matching, exact matches, and more. It allows you to focus your search on specific file extensions or exclude certain extensions from the search space.
+`fuzzy-ls` is a cross-platform command line utility that extends the functionality of the popular `ls` command along with a GUI by enabling fuzzy searching, regex pattern matching, exact matches, and more. It allows you to focus your search on specific file extensions or exclude certain extensions from the search space.
+
+Here is an example of a search. Exact matches are highlighted by green on terminal and fuzzy matches with blue like this:
+
+![fuzzy_search](static/fuzzy_search_ui.png)
+
 
 ## Features
 
@@ -35,58 +40,39 @@ Options:
   -V, --version              Print versionfuzzy-ls.exe [OPTIONS] <QUERY>
 ```
 ## Examples
-Here are some examples demonstrating how to use `fuzzy-ls`. Exact matches are highlighted by green on terminal and fuzzy matches with blue like this:
-
-![fuzzy_search](static/fuzzy_search_ui.png)
-
 ### Fuzzy search
 ```shell
 fuzzy-ls search
-search - .\src\search.rs
-searchfn - .\test_data\searchfn.java
 ```
-
+![fuzzy_search](static/search_example.png)
 ### Regex search
 ```shell
 fuzzy-ls fuzzy.* -r
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.d
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.exe
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.pdb
-fuzzy-ls - .\target\debug\fuzzy-ls.d
-fuzzy-ls - .\target\debug\fuzzy-ls.exe
-fuzzy_ls - .\target\debug\fuzzy_ls.pdb
-fuzzy_search - .\test_data\fuzzy_search.png
 ```
+![fuzzy_search](static/regex.png)
 
 You can mix and match focused flags with any of the search type
 
 #### Regex with focused extensions
 ```shell
 fuzzy-ls fuzzy.* -r -f exe
-fuzzy_ls-2f8732b3ab03d5a6 - .\target\debug\deps\fuzzy_ls-2f8732b3ab03d5a6.exe
-fuzzy_ls-c33a3a1ef73b944b - .\target\debug\deps\fuzzy_ls-c33a3a1ef73b944b.exe
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.exe
-fuzzy-ls - .\target\debug\fuzzy-ls.exe
 ```
+![fuzzy_search](static/regex_with_focus.png)
+
 
 #### Regex with exclude extensions
 ```shell
 fuzzy-ls fuzzy.* -r -e exe
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.d
-fuzzy_ls - .\target\debug\deps\fuzzy_ls.pdb
-fuzzy-ls - .\target\debug\fuzzy-ls.d
-fuzzy_ls - .\target\debug\fuzzy_ls.pdb
-fuzzy_search - .\test_data\fuzzy_search.png
 ```
-
+![fuzzy_search](static/regex_with_avoid.png)
 Note: In case both focused and exclude extensions are provided: focus extensions take a precedence.
+
 
 ### Exact string matching
 ```shell
 fuzzy-ls utils -p
-utils - .\test_data\utils.cpp
-utils - .\test_data\utils.h
 ```
+![fuzzy_search](static/exact_string.png)
 
 ## Experimental Feature: Open files in editor
 The `open_in_editor` feature allows you to open files directly in your preferred editor from the command line. By default, this feature uses `nvim` (Neovim) and opens the file in a new terminal window. You can override the default editor using the `-d` flag.
