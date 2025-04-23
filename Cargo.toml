@@ -3,7 +3,7 @@ open_in_editor = []
 
 [package]
 name = "fuzzy-ls"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 authors = ["Ashwin Pugalia"]
 description = "Fuzzy file search command line utility."
