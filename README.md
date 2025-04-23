@@ -1,7 +1,7 @@
 # fuzzy-ls
 ![crates.io](https://img.shields.io/crates/v/fuzzy-ls.svg) ![Build Passing](https://github.com/Ashwin-1709/fuzzy-ls/actions/workflows/rust.yml/badge.svg)
 
-`fuzzy-ls` is a powerful command line utility that extends the functionality of the popular `ls` command by enabling fuzzy searching, regex pattern matching, exact matches, and more. It allows you to focus your search on specific file extensions or exclude certain extensions from the search space.
+`fuzzy-ls` is a cross-platform command line utility that extends the functionality of the popular `ls` command by enabling fuzzy searching, regex pattern matching, exact matches, and more. It allows you to focus your search on specific file extensions or exclude certain extensions from the search space.
 
 ## Features
 
@@ -14,7 +14,7 @@
 
 ## Fuzzy Searching Algorithm
 
-Currently, the tool uses the [Damerau-Levenshtein](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance) algorithm for fuzzy searching. The Damerau-Levenshtein algorithm calculates the minimum number of operations (insertions, deletions, substitutions, and transpositions) required to transform one string into another. There are plans to add more scorers later to enhance the search capabilities.
+Currently, the tool uses the [Damerau-Levenshtein](https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance) algorithm for fuzzy searching. The Damerau-Levenshtein algorithm calculates the minimum number of operations (insertions, deletions, substitutions, and transpositions) required to transform one string into another.
 
 ## Usage
 
