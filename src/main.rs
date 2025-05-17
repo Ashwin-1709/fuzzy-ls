@@ -8,7 +8,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use regex::Regex;
-use std::{collections::BTreeSet, io::Write};
+use std::collections::BTreeSet;
 use tui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
@@ -89,7 +89,7 @@ fn display_results_ui(
                 .constraints([Constraint::Percentage(100)].as_ref())
                 .split(size);
 
-            if (potential_hits.is_empty()) {
+            if potential_hits.is_empty() {
                 let no_results = Paragraph::new(Span::styled(
                     "No results found.",
                     Style::default().add_modifier(Modifier::BOLD),
@@ -211,9 +211,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         ranked_files.sort_by(|a, b| a.0.cmp(&b.0));
         let threshold: u32 = match args.query.len() {
-            0..=4 => (args.query.len() as f32 * 0.25).ceil() as u32,
-            5..=10 => (args.query.len() as f32 * 0.35).ceil() as u32,
-            _ => (args.query.len() as f32 * 0.45).ceil() as u32,
+            0..=4 => (args.query.len() as f32 * 0.15).ceil() as u32,
+            5..=10 => (args.query.len() as f32 * 0.25).ceil() as u32,
+            _ => (args.query.len() as f32 * 0.35).ceil() as u32,
         };
         for (score, file_name, full_path) in ranked_files {
             if score <= threshold {

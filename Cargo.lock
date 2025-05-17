@@ -231,7 +231,7 @@ dependencies = [
 
 [[package]]
 name = "fuzzy-ls"
-version = "1.1.1"
+version = "1.1.2"
 dependencies = [
  "clap",
  "crossterm 0.29.0",
