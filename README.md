@@ -15,7 +15,7 @@ Here is an example of a search. Exact matches are highlighted by green on termin
 - **Exact Matches**: Search for files that exactly match your query.
 - **Focus on Extensions**: Limit your search to specific file extensions.
 - **Exclude Extensions**: Exclude files with certain extensions from your search.
-- **GUI**: Get clear view of the search results in a terminal GUI.
+- **GUI**: Get clear view of the search results in a terminal GUI and seamlessly navigate across your files.
 
 ## Fuzzy Searching Algorithm
 
@@ -74,31 +74,22 @@ fuzzy-ls utils -p
 ```
 ![fuzzy_search](static/exact_string.png)
 
-## Experimental Feature: Open files in editor
-The `open_in_editor` feature allows you to open files directly in your preferred editor from the command line. By default, this feature uses `nvim` (Neovim) and opens the file in a new terminal window. You can override the default editor using the `-d` flag.
 
-### Installation and Usage
+## Navigating to Files
 
-To install and run the feature locally, use the following command:
+Once you've found the files you're looking for, you can seamlessly navigate to them using your favorite code editors. The default editor is **Neovim (nvim)**, but you can easily configure it to use any editor of your choice.
+
+### Default Editor (Neovim)
+When you select a file in the fuzzy-ls interface, it will automatically open in Neovim by default:
+
+![Neovim Editor](static/code_editor_nvim.png)
+
+### Using Other Editors
+You can override the default editor used to open the file in `fuzzy-ls` using the `-d` flag.
 ```shell
-cargo install fuzzy-ls --features "open_in_editor"
+fuzzy-ls search -d code
 ```
-
-### Here is the feature in action in windows
-
-![nvim](static/code_editor_nvim.png)
-
-
-To override the default editor, use the `-d` or `--default_editor_command` flag followed by the editor of your choice. For example, to use VS Code:
-```shell
-fuzzy-ls search -d code 
-```
-
-![vscode](static/code_editor_vscode.png)
-
-### Platform Support
-
-The `open_in_editor` feature has been tested on Windows. Testing on other operating systems is planned before merging with the default behavior. Users are encouraged to try it out on various OSes and report any issues.
+![Vscode Editor](static/code_editor_vscode.png)
 
 
 ## Community Contribution

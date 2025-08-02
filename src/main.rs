@@ -112,9 +112,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         ranked_files.sort_by(|a, b| a.0.cmp(&b.0));
         let threshold: u32 = match args.query.len() {
-            0..=4 => (args.query.len() as f32 * 0.15).ceil() as u32,
-            5..=10 => (args.query.len() as f32 * 0.25).ceil() as u32,
-            _ => (args.query.len() as f32 * 0.35).ceil() as u32,
+            0..=4 => (args.query.len() as f32 * 0.20).ceil() as u32,
+            5..=10 => (args.query.len() as f32 * 0.30).ceil() as u32,
+            _ => (args.query.len() as f32 * 0.40).ceil() as u32,
         };
         for (score, file_name, full_path) in ranked_files {
             if score <= threshold {
@@ -151,5 +151,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             );
         }
     }
-    return gui::display_results_ui(potential_hits);
+    return gui::display_results_ui(potential_hits, &args.default_editor_command);
 }
