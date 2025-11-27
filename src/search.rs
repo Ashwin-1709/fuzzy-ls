@@ -1,5 +1,5 @@
 use std::collections::BTreeSet;
-use walkdir::WalkDir;
+use jwalk::{WalkDir};
 
 #[derive(Debug, Clone, Copy)]
 pub enum FuzzySearchAlgorithm {
