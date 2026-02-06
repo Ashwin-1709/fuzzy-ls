@@ -1,32 +1,30 @@
 extern crate clap;
+mod app;
 mod editor;
 mod search;
-mod gui;
-use clap::{ArgAction, Parser};
-use regex::Regex;
-use std::collections::BTreeSet;
+mod ui;
 
-#[derive(Parser)]
+use clap::{ArgAction, Parser};
+use crossterm::{
+    event::{DisableMouseCapture, EnableMouseCapture},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{backend::CrosstermBackend, Terminal};
+use std::collections::BTreeSet;
+use std::io;
+
+#[derive(Parser, Debug)]
 #[clap(
-    name = "ffs",
-    version = "0.1.0",
-    about = "Fuzzy file search command line tool.",
+    name = "fuzzy-ls",
+    version = "1.3.0",
+    about = "Fuzzy file search TUI.",
     author = "Ashwin Pugalia"
 )]
 struct Cli {
-    /// Query string used for the search.
-    #[clap(
-        help = "Query used for the search. Default search mode is fuzzy search within recursive directories."
-    )]
-    query: String,
-
-    /// Use query as a regex pattern.
-    #[clap(short, long, action = ArgAction::SetTrue, help = "Query is a regex pattern and the search is performed using the regex.")]
-    regex: bool,
-
-    /// Use query as an exact pattern.
-    #[clap(short = 'p', long, action = ArgAction::SetTrue, help = "Exact pattern matching is done for the query.")]
-    exact: bool,
+    /// Initial query string.
+    #[clap(help = "Initial query used for the search.")]
+    query: Option<String>,
 
     /// Exclude files of specific extensions.
     #[clap(
@@ -61,95 +59,53 @@ struct Cli {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
-    if args.regex && args.exact {
-        return Err("Both regex and exact flags cannot be set together.".into());
-    }
+    
+    // Prepare extension sets
     let mut exclude_extension_set: BTreeSet<String> = BTreeSet::new();
     let mut focus_extension_set: BTreeSet<String> = BTreeSet::new();
     args.exclude.into_iter().for_each(|ext| {
-        exclude_extension_set.insert(ext.to_string());
+        exclude_extension_set.insert(ext);
     });
     args.focus.into_iter().for_each(|ext| {
-        focus_extension_set.insert(ext.to_string());
+        focus_extension_set.insert(ext);
     });
-    let files = search::walk_directory(exclude_extension_set, focus_extension_set);
-    let mut potential_hits: Vec<(u32, String, String)> = Vec::new();
-    if args.exact {
-        for (file_name, full_path) in files {
-            if file_name == args.query {
-                potential_hits.push((0, file_name, full_path));
-            }
-        }
-    } else if args.regex {
-        let pattern: Regex = match Regex::new(&args.query) {
-            Ok(pattern) => pattern,
-            Err(error) => return Err(error.into()),
-        };
-        for (file_name, full_path) in files {
-            match pattern.captures(&file_name) {
-                Some(caps) => {
-                    if caps
-                        .get(0)
-                        .map_or(false, |matched| matched.as_str() == file_name)
-                    {
-                        potential_hits.push((0, file_name, full_path));
-                    }
-                }
-                None => continue,
-            }
-        }
-    } else {
-        let mut ranked_files: Vec<(u32, String, String)> = Vec::new();
-        for (file_name, full_path) in files {
-            match search::score_fuzzy_search(
-                args.query.clone(),
-                file_name.clone(),
-                search::FuzzySearchAlgorithm::DamerauLevenshtein,
-            ) {
-                Ok(score) => ranked_files.push((score, file_name.clone(), full_path)),
-                Err(error) => return Err(error.into()),
-            };
-        }
-        ranked_files.sort_by(|a, b| a.0.cmp(&b.0));
-        let threshold: u32 = match args.query.len() {
-            0..=4 => (args.query.len() as f32 * 0.20).ceil() as u32,
-            5..=10 => (args.query.len() as f32 * 0.30).ceil() as u32,
-            _ => (args.query.len() as f32 * 0.40).ceil() as u32,
-        };
-        for (score, file_name, full_path) in ranked_files {
-            if score <= threshold {
-                potential_hits.push((score, file_name, full_path));
-            } else {
-                break;
-            }
-        }
+
+    // Scan directory
+    // Note: This scanning is synchronous and might take time for large folders.
+    // In the future, we should probably do this in a thread or background task within the App.
+    let all_files = search::walk_directory(exclude_extension_set, focus_extension_set);
+
+    // Setup terminal
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    // Create app
+    let mut app = app::App::new(all_files);
+    
+    // Set initial state from args if present
+    if let Some(q) = args.query {
+        app.search_query = q;
+        app.current_screen = app::CurrentScreen::Search;
     }
-    if cfg!(feature = "open_in_editor") {
-        if potential_hits.is_empty() {
-            println!("No files found.");
-        } else {
-            println!("{} files found:", potential_hits.len());
-            let mut file_number: usize = 1;
-            for (score, file_name, full_path) in potential_hits.clone() {
-                if score == 0 {
-                    println!(
-                        "{}. \x1b[32m{}\x1b[0m - {}",
-                        file_number, file_name, full_path
-                    ); // Green color for score 0
-                } else {
-                    println!(
-                        "{}. \x1b[34m{}\x1b[0m - {}",
-                        file_number, file_name, full_path
-                    ); // Blue color for other scores
-                }
-                file_number += 1;
-            }
-            return editor::experimental_open_files(
-                args.default_editor_command,
-                file_number,
-                potential_hits,
-            );
-        }
+    
+    // Run app
+    let res = app.run_app(&mut terminal);
+
+    // Restore terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    if let Err(err) = res {
+        println!("{:?}", err);
     }
-    return gui::display_results_ui(potential_hits, &args.default_editor_command);
+
+    Ok(())
 }
