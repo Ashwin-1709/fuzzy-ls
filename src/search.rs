@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 use jwalk::{WalkDir};
+use rayon::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum FuzzySearchAlgorithm {
@@ -34,7 +35,12 @@ pub fn walk_directory(
         let file_name: String = String::from(entry.file_name().to_string_lossy());
         let full_path: String = String::from(entry.path().to_string_lossy());
         let chunks: Vec<&str> = file_name.split('.').collect();
-        let raw_file_name: String = chunks[..chunks.len() - 1].join(".");
+        // If there's no dot in the filename, keep the full filename.
+        let raw_file_name: String = if chunks.len() <= 1 {
+            file_name.clone()
+        } else {
+            chunks[..chunks.len() - 1].join(".")
+        };
         if focus_extension_set.is_empty() {
             if chunks
                 .last()
@@ -72,11 +78,29 @@ pub fn score_fuzzy_search(
     scorer: FuzzySearchAlgorithm,
 ) -> Result<u32, String> {
     match scorer {
-        FuzzySearchAlgorithm::DamerauLevenshtein => {
-            Ok(damerau_levenshtein_distance(query, file_name))
-        }
+        FuzzySearchAlgorithm::DamerauLevenshtein => Ok(damerau_levenshtein_distance(&query, &file_name)),
         _ => Err(format!("{:?} Algorithm not implemented", scorer)),
     }
+}
+
+/// Score a batch of files against a single query using the given scorer.
+/// Returns a Vec of (score, file_name, full_path) sorted by score (ascending).
+pub fn score_batch(
+    query: &str,
+    files: &[(String, String)],
+    scorer: FuzzySearchAlgorithm,
+) -> Result<Vec<(u32, String, String)>, String> {
+    // Use rayon to parallelize scoring across files for performance on large
+    // repositories. Collect only successful scores and then sort by score.
+    let mut results: Vec<(u32, String, String)> = files
+        .par_iter()
+        .filter_map(|(file_name, full_path)| match score_fuzzy_search(query.to_string(), file_name.clone(), scorer) {
+            Ok(score) => Some((score, file_name.clone(), full_path.clone())),
+            Err(_) => None,
+        })
+        .collect();
+    results.par_sort_by(|a, b| a.0.cmp(&b.0));
+    Ok(results)
 }
 
 /// Computes the Damerau-Levenshtein distance between two strings.
@@ -89,9 +113,12 @@ pub fn score_fuzzy_search(
 /// # Returns
 ///
 /// The Damerau-Levenshtein distance as `u32`.
-fn damerau_levenshtein_distance(query: String, file_name: String) -> u32 {
-    let n: usize = query.len();
-    let m: usize = file_name.len();
+fn damerau_levenshtein_distance(query: &str, file_name: &str) -> u32 {
+    // Work with char vectors so multi-byte UTF-8 characters are handled correctly
+    let a: Vec<char> = query.chars().collect();
+    let b: Vec<char> = file_name.chars().collect();
+    let n = a.len();
+    let m = b.len();
 
     let mut dp: Vec<Vec<u32>> = vec![vec![0; m + 1]; n + 1];
     for i in 0..=n {
@@ -100,24 +127,24 @@ fn damerau_levenshtein_distance(query: String, file_name: String) -> u32 {
     for j in 0..=m {
         dp[0][j] = j as u32;
     }
+
     for i in 1..=n {
         for j in 1..=m {
-            if query.chars().nth(i - 1) == file_name.chars().nth(j - 1) {
+            if a[i - 1] == b[j - 1] {
                 dp[i][j] = dp[i - 1][j - 1];
             } else {
-                dp[i][j] =
-                    1 + std::cmp::min(dp[i - 1][j], std::cmp::min(dp[i][j - 1], dp[i - 1][j - 1]));
+                dp[i][j] = 1 + std::cmp::min(
+                    dp[i - 1][j],
+                    std::cmp::min(dp[i][j - 1], dp[i - 1][j - 1]),
+                );
             }
-            if i > 1
-                && j > 1
-                && query.chars().nth(i - 1) == file_name.chars().nth(j - 2)
-                && query.chars().nth(i - 2) == file_name.chars().nth(j - 1)
-            {
+            if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1] {
                 dp[i][j] = std::cmp::min(dp[i][j], dp[i - 2][j - 2] + 1);
             }
         }
     }
-    return dp[n][m];
+
+    dp[n][m]
 }
 
 #[cfg(test)]
@@ -126,13 +153,7 @@ mod tests {
 
     #[test]
     fn test_damerau_levenshtein_distance() {
-        assert_eq!(
-            damerau_levenshtein_distance("irks".to_string(), "risk".to_string()),
-            2
-        );
-        assert_eq!(
-            damerau_levenshtein_distance("geeks".to_string(), "forgeeks".to_string()),
-            3
-        );
+        assert_eq!(damerau_levenshtein_distance("irks", "risk"), 2);
+        assert_eq!(damerau_levenshtein_distance("geeks", "forgeeks"), 3);
     }
 }

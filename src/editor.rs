@@ -13,30 +13,7 @@ use std::process::Command;
 /// * `Result<(), Box<dyn std::error::Error>>` - Returns Ok(()) if successful, otherwise returns an error.
 ///
 /// ``
-pub fn experimental_open_files(
-    default_editor_command: String,
-    file_number: usize,
-    potential_hits: Vec<(u32, String, String)>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Enter file number to open the file in an editor. Press Enter to exit.");
-    let mut input = String::new();
-    stdin()
-        .read_line(&mut input)
-        .expect("Failed to read the input.");
 
-    let index_number: usize = match input.trim().parse() {
-        Ok(index) => index,
-        Err(_) => return Ok(()),
-    };
-    if index_number > 0 && index_number <= file_number {
-        let (_, _, full_path) = &potential_hits[index_number - 1];
-        open_in_new_terminal(&default_editor_command, &[full_path])
-            .expect("Failed to open file in the editor.");
-    } else {
-        println!("Invalid file number.");
-    }
-    return Ok(());
-}
 
 /// Opens a command in a new terminal window.
 ///
@@ -54,16 +31,17 @@ pub fn experimental_open_files(
 /// * On Windows, uses `cmd` with `/c start`.
 /// * On Linux, uses `gnome-terminal` with `--`.
 /// * On macOS, uses `open` with `-a Terminal`.
-fn open_in_new_terminal(command: &str, args: &[&str]) -> Result<(), std::io::Error> {
+/// Opens a command in a new terminal window.
+pub fn open_file_in_terminal(command: &str, file_path: &str) -> Result<(), std::io::Error> {
     #[cfg(target_os = "windows")]
     let terminal_cmd = "cmd";
     #[cfg(target_os = "windows")]
     let terminal_args = &["/c", "start", command];
 
     #[cfg(target_os = "linux")]
-    let terminal_cmd = "gnome-terminal"; // Or "xterm", "konsole", etc. - see below
+    let terminal_cmd = "gnome-terminal";
     #[cfg(target_os = "linux")]
-    let terminal_args = &["--", command]; // Important: "--" separates terminal args from command args
+    let terminal_args = &["--", command];
 
     #[cfg(target_os = "macos")]
     let terminal_cmd = "open";
@@ -72,9 +50,7 @@ fn open_in_new_terminal(command: &str, args: &[&str]) -> Result<(), std::io::Err
 
     let mut cmd = Command::new(terminal_cmd);
     cmd.args(terminal_args);
-    cmd.args(args); // Add any arguments to your command
-
-    cmd.spawn()?; // Execute the command
-
+    cmd.arg(file_path);
+    cmd.spawn()?;
     Ok(())
 }
