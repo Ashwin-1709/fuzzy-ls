@@ -9,7 +9,7 @@ use std::collections::BTreeSet;
 #[derive(Parser)]
 #[clap(
     name = "ffs",
-    version = "0.1.0",
+    version = "1.3.0",
     about = "Fuzzy file search command line tool.",
     author = "Ashwin Pugalia"
 )]
